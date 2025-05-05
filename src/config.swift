@@ -1,7 +1,7 @@
 import Cocoa
 import SwiftUI
 
-enum menu_size {
+enum menuSize {
 	case extraSmall, small, medium, large
 }
 
@@ -25,7 +25,7 @@ struct dmenuConfig {
 	var totalHeight: CGFloat { searchH + itemH * maxRows }
 
 	static func build() -> dmenuConfig {
-		var size: menu_size = .medium
+		var size: menuSize = .medium
 		let argv = ProcessInfo.processInfo.arguments
 
 		if argv.contains("-xs") { size = .extraSmall }
