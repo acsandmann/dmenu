@@ -65,7 +65,15 @@ extension dmenu {
 
   func moveSelection(offset: Int) {
     guard !filteredItems.isEmpty else { return }
-    let next = max(0, min(tableView.selectedRow + offset, filteredItems.count - 1))
+    let currentSelection = tableView.selectedRow
+    let count = filteredItems.count
+    var next = currentSelection + offset
+
+    if next < 0 {
+      next = count - 1
+    } else if next >= count {
+      next = 0
+    }
     selectRow(index: next)
   }
 
