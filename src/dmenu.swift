@@ -1,45 +1,45 @@
 import Cocoa
 
 final class dmenu: NSObject,
-  NSApplicationDelegate,
-  NSTableViewDataSource,
-  NSTableViewDelegate,
-  NSSearchFieldDelegate
+	NSApplicationDelegate,
+	NSTableViewDataSource,
+	NSTableViewDelegate,
+	NSSearchFieldDelegate
 {
+	var window: NSWindow!
+	var tableView: NSTableView!
+	var searchField: NSSearchField!
 
-  var window: NSWindow!
-  var tableView: NSTableView!
-  var searchField: NSSearchField!
+	var allItems: [String] = []
+	var allItemsBytes = [[UInt8]]()
+	var allItemsLower: [String] = []
+	var filteredItems: [String] = []
+	var allIndices = [Int]()
+	var liveIndices = [Int]()
+	var lastTokens = [Substring]()
+	var currentTokens: [Substring] = []
 
-  var allItems: [String] = []
-  var allItemsBytes = [[UInt8]]()
-  var allItemsLower: [String] = []
-  var filteredItems: [String] = []
-  var allIndices = [Int]()
-  var liveIndices = [Int]()
-  var lastTokens = [Substring]()
-  var currentTokens: [Substring] = []
+	var config: dmenuConfig
 
-  var config: dmenuConfig
+	static let workQ = DispatchQueue(
+		label: "search‑score‑q",
+		qos: .userInitiated
+	)
 
-  static let workQ = DispatchQueue(
-    label: "search‑score‑q",
-    qos: .userInitiated)
+	override init() {
+		config = dmenuConfig.build()
+		super.init()
+	}
 
-  override init() {
-    self.config = dmenuConfig.build()
-    super.init()
-  }
+	func applicationDidFinishLaunching(_: Notification) {
+		buildUI()
+		loadStdin()
+		window.makeFirstResponder(searchField)
+		NSApp.activate(ignoringOtherApps: true)
+		installKeyMonitor()
+	}
 
-  func applicationDidFinishLaunching(_ note: Notification) {
-    buildUI()
-    loadStdin()
-    window.makeFirstResponder(searchField)
-    NSApp.activate(ignoringOtherApps: true)
-    installKeyMonitor()
-  }
-
-  func applicationDidResignActive(_ notification: Notification) {
-    NSApp.terminate(nil)
-  }
+	func applicationDidResignActive(_: Notification) {
+		NSApp.terminate(nil)
+	}
 }

@@ -7,5 +7,7 @@ dmenu: $(SRCS)
 
 clean:
 	rm -f dmenu
+format:
+	swiftformat src
 
 .PHONY: clean
