@@ -27,7 +27,7 @@ final class dmenu: NSObject,
 	)
 
 	override init() {
-		config = dmenu_config.make()
+		config = dmenu_config.make()!
 		super.init()
 	}
 

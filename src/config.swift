@@ -54,7 +54,7 @@ struct dmenu_config {
 
 	var totalHeight: CGFloat { searchH + itemH * maxRows }
 
-	static func make(from argv: [String] = CommandLine.arguments) -> DMenuConfig? {
+	static func make(from argv: [String] = CommandLine.arguments) -> dmenu_config? {
 		var size: menu_size = .medium
 		var showIcon = false
 		var placeholderArg: String?
