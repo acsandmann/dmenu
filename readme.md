@@ -1,5 +1,11 @@
 simple chooser akin to choose-gui or dmenu
 
+### installation
+```bash
+brew tap acsandmann/tap
+brew install acsandmann/tap/dmenu
+```
+
 ### usage:
 ```bash
 ls | ./dmenu -p "Select a file" -i -l
