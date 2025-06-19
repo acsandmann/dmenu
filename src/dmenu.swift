@@ -19,7 +19,7 @@ final class dmenu: NSObject,
 	var lastTokens = [Substring]()
 	var currentTokens: [Substring] = []
 
-	var config: dmenuConfig
+	var config: dmenu_config
 
 	static let workQ = DispatchQueue(
 		label: "search‑score‑q",
@@ -27,7 +27,7 @@ final class dmenu: NSObject,
 	)
 
 	override init() {
-		config = dmenuConfig.build()
+		config = dmenu_config.make()
 		super.init()
 	}
 
