@@ -44,6 +44,7 @@ extension dmenu {
 		rootBlur.state = .active
 		rootBlur.wantsLayer = true
 		rootBlur.layer?.cornerRadius = borderRadius
+		rootBlur.layer?.masksToBounds = true
 		window.contentView = rootBlur
 
 		let sheen = CAGradientLayer()
@@ -79,7 +80,7 @@ extension dmenu {
 			iconView.image = NSImage(
 				systemSymbolName: "magnifyingglass", accessibilityDescription: nil
 			)?
-				.withSymbolConfiguration(.init(pointSize: iconSize, weight: .light))
+			.withSymbolConfiguration(.init(pointSize: iconSize, weight: .light))
 			iconView.contentTintColor = .secondaryLabelColor
 			rootBlur.addSubview(iconView)
 		}
