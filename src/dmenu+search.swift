@@ -167,8 +167,8 @@ extension dmenu {
 			case 36:
 				self.selectCurrentRow()
 				return nil
-			case 53:
-				NSApp.terminate(nil)
+			case 8 where e.modifierFlags.contains(.control), 53:
+				self.closeWindow()
 				return nil
 			default: return e
 			}

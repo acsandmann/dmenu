@@ -1,6 +1,50 @@
 import Cocoa
 
 extension dmenu {
+	func createHighlightedText(item: String, tokens: [String]) -> NSAttributedString {
+		let attr = NSMutableAttributedString(string: item)
+		let baseFont = NSFont.monospacedSystemFont(ofSize: config.itemFontSize, weight: .regular)
+
+		attr.addAttributes(
+			[
+				.font: baseFont,
+				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.kern: 0.5,
+			], range: NSRange(location: 0, length: item.count)
+		)
+
+		let lowerItem = item.lowercased()
+		for token in tokens {
+			var searchStart = lowerItem.startIndex
+			while let range = lowerItem.range(of: token, range: searchStart ..< lowerItem.endIndex) {
+				let nsRange = NSRange(range, in: item)
+
+				let highlightColor = NSColor.systemCyan
+				attr.addAttributes(
+					[
+						.backgroundColor: highlightColor.withAlphaComponent(0.2),
+						.font: NSFont.monospacedSystemFont(
+							ofSize: config.itemFontSize, weight: .bold
+						),
+						.foregroundColor: highlightColor,
+						.kern: 0.8,
+						.shadow: {
+							let shadow = NSShadow()
+							shadow.shadowColor = highlightColor.withAlphaComponent(0.7)
+							shadow.shadowOffset = NSSize(width: 0, height: 0)
+							shadow.shadowBlurRadius = 3.0
+							return shadow
+						}(),
+					], range: nsRange
+				)
+
+				searchStart = range.upperBound
+			}
+		}
+
+		return attr
+	}
+
 	func numberOfRows(in _: NSTableView) -> Int { filteredItems.count }
 
 	func tableView(
@@ -23,20 +67,7 @@ extension dmenu {
 			.lowercased()
 			.split(whereSeparator: \.isWhitespace)
 		if !tokens.isEmpty {
-			let lowerItem = item.lowercased()
-			let attr = NSMutableAttributedString(string: item)
-
-			for tok in tokens {
-				var searchStart = lowerItem.startIndex
-				while let r = lowerItem.range(of: tok, range: searchStart ..< lowerItem.endIndex) {
-					attr.addAttribute(
-						.underlineStyle,
-						value: NSUnderlineStyle.single.rawValue,
-						range: NSRange(r, in: item)
-					)
-					searchStart = r.upperBound
-				}
-			}
+			let attr = createHighlightedText(item: item, tokens: tokens.map(String.init))
 			txt.attributedStringValue = attr
 		} else {
 			txt.stringValue = item
@@ -97,68 +128,114 @@ extension dmenu {
 
 final class dmenu_textfield: NSTextField {
 	override var allowsVibrancy: Bool { false }
+
+	override var stringValue: String {
+		didSet { applyBaseAttributes() }
+	}
+
+	override var attributedStringValue: NSAttributedString {
+		didSet {}
+	}
+
+	private func applyBaseAttributes() {
+		guard !stringValue.isEmpty else { return }
+
+		let baseFont = NSFont.monospacedSystemFont(ofSize: font?.pointSize ?? 13, weight: .regular)
+		let attr = NSMutableAttributedString(string: stringValue)
+
+		attr.addAttributes(
+			[
+				.font: baseFont,
+				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.kern: 0.5,
+			], range: NSRange(location: 0, length: stringValue.count)
+		)
+
+		super.attributedStringValue = attr
+	}
 }
 
 final class dmenu_row: NSTableRowView {
-	private weak static var currentHover: dmenu_row?
+	private var trackingArea: NSTrackingArea?
+	private static var currentHover: WeakRef<dmenu_row>?
 
 	private var isHovered = false {
 		didSet {
-			guard oldValue != isHovered, !isSelected else { return }
+			guard oldValue != isHovered else { return }
 			needsDisplay = true
-		}
-	}
-
-	override func mouseEntered(with e: NSEvent) {
-		super.mouseEntered(with: e)
-
-		if let old = Self.currentHover, old !== self {
-			old.isHovered = false
-		}
-
-		Self.currentHover = self
-		isHovered = true
-
-		if !isSelected { needsDisplay = true }
-	}
-
-	override func mouseExited(with e: NSEvent) {
-		super.mouseExited(with: e)
-
-		if Self.currentHover === self {
-			Self.currentHover = nil
-		}
-
-		isHovered = false
-		needsDisplay = true
-	}
-
-	override func drawSelection(in _: NSRect) {
-		guard selectionHighlightStyle != .none else { return }
-		let rect = bounds.insetBy(dx: 2, dy: 2)
-		let path = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
-		NSColor.tertiaryLabelColor.withAlphaComponent(0.15).setFill()
-		path.fill()
-	}
-
-	override func drawBackground(in _: NSRect) {
-		if isHovered && !isSelected {
-			let rect = bounds.insetBy(dx: 2, dy: 2)
-			let path = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
-			NSColor.secondaryLabelColor.withAlphaComponent(0.2).setFill()
-			path.fill()
 		}
 	}
 
 	override func updateTrackingAreas() {
 		super.updateTrackingAreas()
-		trackingAreas.forEach(removeTrackingArea(_:))
-		let opts: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .inVisibleRect]
-		addTrackingArea(NSTrackingArea(rect: bounds, options: opts, owner: self))
+
+		if let trackingArea = trackingArea {
+			removeTrackingArea(trackingArea)
+		}
+
+		trackingArea = NSTrackingArea(
+			rect: bounds,
+			options: [.mouseEnteredAndExited, .activeInKeyWindow],
+			owner: self,
+			userInfo: nil
+		)
+		addTrackingArea(trackingArea!)
 	}
 
-	override var isEmphasized: Bool {
-		get { false }
-		set {}
+	override func mouseEntered(with event: NSEvent) {
+		super.mouseEntered(with: event)
+
+		Self.currentHover?.value?.isHovered = false
+		Self.currentHover = WeakRef(self)
+		isHovered = true
 	}
+
+	override func mouseExited(with event: NSEvent) {
+		super.mouseExited(with: event)
+
+		if Self.currentHover?.value === self {
+			Self.currentHover = nil
+		}
+		isHovered = false
+	}
+
+	private static let selectionPath = NSBezierPath()
+	private static let hoverPath = NSBezierPath()
+
+	override func drawSelection(in _: NSRect) {
+		guard selectionHighlightStyle != .none else { return }
+		drawRowBackground(isSelected: true)
+	}
+
+	override func drawBackground(in _: NSRect) {
+		if isHovered && !isSelected {
+			drawRowBackground(isSelected: false)
+		}
+	}
+
+	private func drawRowBackground(isSelected: Bool) {
+		let rect = bounds.insetBy(dx: 2, dy: 2)
+		let path = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
+
+		if isSelected {
+			NSColor.controlAccentColor.withAlphaComponent(0.23).setFill()
+			path.fill()
+
+			NSColor.controlAccentColor.withAlphaComponent(0.33).setStroke()
+			path.lineWidth = 1.0
+			path.stroke()
+		} else {
+			NSColor.controlAccentColor.withAlphaComponent(0.1).setFill()
+			path.fill()
+
+			NSColor.controlAccentColor.withAlphaComponent(0.25).setStroke()
+			path.lineWidth = 0.5
+			path.stroke()
+		}
+	}
+}
+
+private class WeakRef<T: AnyObject> {
+	weak var value: T?
+	init(_ value: T) { self.value = value }
 }

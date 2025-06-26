@@ -1,14 +1,18 @@
 import Cocoa
 
 final class scroller: NSScroller {
+	var padding: CGFloat = 0
+
 	override func drawKnobSlot(in _: NSRect, highlight _: Bool) {}
 
 	override func drawKnob() {
-		let pad: CGFloat = 2
-		let track = bounds.insetBy(dx: pad, dy: pad)
-
 		let prop = knobProportion
-		guard prop > 0, prop < 1 else { return }
+		let shouldShow = prop > 0 && prop < 1
+
+		guard shouldShow else { return }
+
+		let pad: CGFloat = 4
+		let track = bounds.insetBy(dx: pad, dy: pad)
 
 		let knobH = track.height * prop
 		let y = track.minY + (track.height - knobH) * CGFloat(doubleValue)
@@ -25,7 +29,7 @@ final class scroller: NSScroller {
 			yRadius: knobR.width / 2
 		)
 		NSColor.secondaryLabelColor
-			// .withAlphaComponent(0.65)
+			.withAlphaComponent(0.7)
 			.setFill()
 		path.fill()
 	}
