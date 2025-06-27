@@ -33,7 +33,7 @@ extension dmenu {
 		window.titlebarAppearsTransparent = true
 		window.isMovableByWindowBackground = true
 
-		NSApp.setActivationPolicy(.regular)
+		NSApp.setActivationPolicy(.accessory)
 		window.center()
 		window.makeKeyAndOrderFront(nil)
 
