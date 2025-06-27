@@ -1,4 +1,4 @@
-SRCS := $(shell find src -name '*.swift')
+SRCS := $(shell find src -name '*.swift' -type f)
 
 dmenu: $(SRCS)
 	@echo "==> Building dmenu…"

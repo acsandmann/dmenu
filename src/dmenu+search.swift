@@ -1,14 +1,6 @@
 import Cocoa
 import Darwin
 
-extension NSObject {
-	@inline(__always)
-	func apply(_ body: (Self) -> Void) -> Self {
-		body(self)
-		return self
-	}
-}
-
 @inline(__always)
 private func memRange(
 	haystack: UnsafeRawBufferPointer,
