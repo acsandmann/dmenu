@@ -54,14 +54,15 @@ extension dmenu {
 	}
 
 	func controlTextDidChange(_: Notification) {
-		// Disable search functionality in lock mode
 		guard !config.lock else { return }
 
-		let tokens = searchField!.stringValue
+		guard let searchField = searchField else { return }
+
+		let tokens = searchField.stringValue
 			.lowercased()
 			.split(whereSeparator: \.isWhitespace)
 
-		currentTokens = tokens
+		currentTokens = Array(tokens)
 
 		guard !tokens.isEmpty else {
 			filteredItems = allItems
@@ -165,9 +166,7 @@ extension dmenu {
 				self.moveSelection(offset: 1)
 				return nil
 			case 36:
-				if !self.config.lock {
-					self.selectCurrentRow()
-				}
+				self.selectCurrentRow()
 				return nil
 			case 8 where e.modifierFlags.contains(.control), 53:
 				self.closeWindow()

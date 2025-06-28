@@ -55,8 +55,7 @@ extension dmenu {
 
 	func moveSelection(offset: Int) {
 		guard !filteredItems.isEmpty else { return }
-		// Disable movement in lock mode
-		//guard !config.lock else { return }
+
 		let currentSelection = tableView.selectedRow
 		let count = filteredItems.count
 		var next = currentSelection + offset
@@ -71,24 +70,22 @@ extension dmenu {
 
 	func selectRow(index: Int) {
 		guard !filteredItems.isEmpty else { return }
-		// Disable row selection in lock mode
-		//guard !config.lock else { return }
+
 		tableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
 		tableView.scrollRowToVisible(index)
 	}
 
 	func selectCurrentRow() {
-		// Disable selection output in lock mode
-		//guard !config.lock else { return }
+		guard !config.lock else { return }
 		let r = tableView.selectedRow
 		guard r >= 0, r < filteredItems.count else { return }
+		print(filteredItems[r])
 		fflush(stdout)
 		NSApp.terminate(nil)
 	}
 
 	@objc func handleClick() {
-		// Disable click handling in lock mode
-		//guard !config.lock else { return }
+		guard !config.lock else { return }
 		selectCurrentRow()
 	}
 }

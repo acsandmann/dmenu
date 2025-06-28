@@ -98,7 +98,6 @@ extension dmenu {
 		shadowLayer.shadowRadius = 30
 		shadowLayer.shadowOffset = CGSize(width: 0, height: -10)
 		rootBlur.layer?.superlayer?.insertSublayer(shadowLayer, below: rootBlur.layer)
-		// Only create search UI if not in lock mode
 		if !config.lock {
 			let searchAreaTopY = height - searchH
 			let searchAreaCenterY = searchAreaTopY + searchH / 2
