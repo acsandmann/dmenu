@@ -8,6 +8,6 @@ dmenu: $(SRCS)
 clean:
 	rm -f dmenu
 format:
-	swiftformat src --recursive
+	swiftformat src
 
 .PHONY: clean
