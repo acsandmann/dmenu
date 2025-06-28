@@ -10,10 +10,10 @@ enum menu_size: String {
 
 private struct size_preset {
 	let width, itemH, maxRows, searchH,
-	    searchFieldHeight, borderRadius,
-	    searchFontSize, itemFontSize,
-	    iconSize, iconPadding,
-	    textPadding, sidePadding: CGFloat
+		searchFieldHeight, borderRadius,
+		searchFontSize, itemFontSize,
+		iconSize, iconPadding,
+		textPadding, sidePadding: CGFloat
 }
 
 private let presets: [menu_size: size_preset] = [
@@ -49,18 +49,20 @@ private let presets: [menu_size: size_preset] = [
 struct dmenu_config {
 	let placeholder: String
 	let showIcon: Bool
+	let lock: Bool
 
 	let width, itemH, maxRows, searchH,
-	    searchFieldHeight, borderRadius,
-	    searchFontSize, itemFontSize,
-	    iconSize, iconPadding,
-	    textPadding, sidePadding: CGFloat
+		searchFieldHeight, borderRadius,
+		searchFontSize, itemFontSize,
+		iconSize, iconPadding,
+		textPadding, sidePadding: CGFloat
 
 	var totalHeight: CGFloat { searchH + itemH * maxRows }
 
 	static func make(from argv: [String] = CommandLine.arguments) -> dmenu_config? {
 		var size: menu_size = .medium
 		var showIcon = false
+		var lock = false
 		var placeholderArg: String?
 		var i = 1
 
@@ -79,6 +81,7 @@ struct dmenu_config {
 				let raw = String(arg.dropFirst("--size=".count))
 				size = menu_size(rawValue: raw) ?? .medium
 			case "-i", "--icon": showIcon = true
+			case "--lock": lock = true
 			case "-p", "--placeholder":
 				guard i + 1 < argv.count else {
 					fatalError("'-p/--placeholder' requires a value.")
@@ -97,7 +100,7 @@ struct dmenu_config {
 		let p = presets[size]!
 
 		return dmenu_config(
-			placeholder: placeholder, showIcon: showIcon,
+			placeholder: placeholder, showIcon: showIcon, lock: lock,
 			width: p.width, itemH: p.itemH, maxRows: p.maxRows, searchH: p.searchH,
 			searchFieldHeight: p.searchFieldHeight, borderRadius: p.borderRadius,
 			searchFontSize: p.searchFontSize, itemFontSize: p.itemFontSize,
@@ -122,6 +125,7 @@ struct dmenu_config {
 			OTHER
 			  -i , --icon              Show icon column
 			  -p , --placeholder TEXT  Custom search-field placeholder
+			       --lock              Display-only mode (disable search and selection)
 			  -h , --help              Show this help and exit
 			""")
 	}

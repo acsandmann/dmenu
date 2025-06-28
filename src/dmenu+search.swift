@@ -54,7 +54,10 @@ extension dmenu {
 	}
 
 	func controlTextDidChange(_: Notification) {
-		let tokens = searchField.stringValue
+		// Disable search functionality in lock mode
+		guard !config.lock else { return }
+
+		let tokens = searchField!.stringValue
 			.lowercased()
 			.split(whereSeparator: \.isWhitespace)
 
@@ -71,8 +74,8 @@ extension dmenu {
 
 		let searchSpace =
 			(tokens.starts(with: lastTokens) && !liveIndices.isEmpty)
-				? liveIndices
-				: allIndices
+			? liveIndices
+			: allIndices
 
 		Self.workQ.async {
 			let tokenBytes = tokens.map { Array($0.utf8) }
@@ -135,18 +138,19 @@ extension dmenu {
 			else { return nil }
 
 			// contiguous bonus + gap penalty
-			score &+= 32 // token matched
+			score &+= 32  // token matched
 			score &+= (r.upper - r.lower) == tb.count ? 16 : 0
-			score &-= (r.lower - cursor) * 2 // gap penalty
+			score &-= (r.lower - cursor) * 2  // gap penalty
 			cursor = r.upper
 		}
-		score &-= (hayBytes.count - cursor) // prefer shorter tail after last match
+		score &-= (hayBytes.count - cursor)  // prefer shorter tail after last match
 		return score
 	}
 
 	func installKeyMonitor() {
 		NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
 			guard let self = self else { return e }
+
 			switch e.keyCode {
 			case 126:
 				self.moveSelection(offset: -1)
@@ -161,7 +165,9 @@ extension dmenu {
 				self.moveSelection(offset: 1)
 				return nil
 			case 36:
-				self.selectCurrentRow()
+				if !self.config.lock {
+					self.selectCurrentRow()
+				}
 				return nil
 			case 8 where e.modifierFlags.contains(.control), 53:
 				self.closeWindow()

@@ -19,6 +19,7 @@ ls | ./dmenu -p "Select a file" -i -l
 -s # small window
 -m # medium window(default)
 -l # large window
+--lock # doesnt allow selections, essentially acts as a display menu
 ```
 
 ### how fuzzy matching works

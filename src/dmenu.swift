@@ -34,7 +34,9 @@ final class dmenu: NSObject,
 	func applicationDidFinishLaunching(_: Notification) {
 		buildUI()
 		loadStdin()
-		window.makeFirstResponder(searchField)
+		if let searchField = searchField {
+			window.makeFirstResponder(searchField)
+		}
 		NSApp.activate(ignoringOtherApps: true)
 		installKeyMonitor()
 	}

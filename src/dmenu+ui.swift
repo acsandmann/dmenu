@@ -7,7 +7,7 @@ extension dmenu {
 		let width = config.width
 		let height = config.totalHeight
 		let borderRadius = config.borderRadius
-		let searchH = config.searchH
+		let searchH = config.lock ? 0 : config.searchH
 		let itemH = config.itemH
 		let searchFieldH = config.searchFieldHeight
 		let sidePadding = config.sidePadding
@@ -98,58 +98,62 @@ extension dmenu {
 		shadowLayer.shadowRadius = 30
 		shadowLayer.shadowOffset = CGSize(width: 0, height: -10)
 		rootBlur.layer?.superlayer?.insertSublayer(shadowLayer, below: rootBlur.layer)
-		let searchAreaTopY = height - searchH
-		let searchAreaCenterY = searchAreaTopY + searchH / 2
-		let ySearch = searchAreaCenterY - searchFieldH / 2 - 4
-		let leadingX: CGFloat = config.showIcon ? config.iconPadding : config.textPadding
+		// Only create search UI if not in lock mode
+		if !config.lock {
+			let searchAreaTopY = height - searchH
+			let searchAreaCenterY = searchAreaTopY + searchH / 2
+			let ySearch = searchAreaCenterY - searchFieldH / 2 - 4
+			let leadingX: CGFloat = config.showIcon ? config.iconPadding : config.textPadding
 
-		if config.showIcon {
-			let iconY = searchAreaCenterY - iconSize / 2
-			let iconX = (config.iconPadding - iconSize) / 2
+			if config.showIcon {
+				let iconY = searchAreaCenterY - iconSize / 2
+				let iconX = (config.iconPadding - iconSize) / 2
 
-			let iconView = NSImageView(
-				frame: .init(x: iconX, y: iconY, width: iconSize, height: iconSize))
-			iconView.image = NSImage(
-				systemSymbolName: "magnifyingglass", accessibilityDescription: nil
-			)?
+				let iconView = NSImageView(
+					frame: .init(x: iconX, y: iconY, width: iconSize, height: iconSize))
+				iconView.image = NSImage(
+					systemSymbolName: "magnifyingglass", accessibilityDescription: nil
+				)?
 				.withSymbolConfiguration(.init(pointSize: iconSize, weight: .light))
-			iconView.contentTintColor = .secondaryLabelColor
-			rootBlur.addSubview(iconView)
+				iconView.contentTintColor = .secondaryLabelColor
+				rootBlur.addSubview(iconView)
+			}
+
+			searchField = searchfield(
+				frame: .init(
+					x: leadingX,
+					y: ySearch,
+					width: width - leadingX - config.textPadding,
+					height: searchFieldH
+				))
+			searchField.itemFontSize = config.searchFontSize
+			searchField.placeholderString = config.placeholder
+			searchField.focusRingType = .none
+			searchField.delegate = self
+			(searchField.cell as? NSSearchFieldCell)?.font = .systemFont(
+				ofSize: config.searchFontSize)
+
+			searchField.isBordered = false
+			searchField.drawsBackground = false
+			searchField.wantsLayer = true
+			if let cell = searchField.cell as? NSSearchFieldCell {
+				cell.searchButtonCell = nil
+				cell.cancelButtonCell = nil
+			}
+			rootBlur.addSubview(searchField)
+
+			let sep = NSView(
+				frame: .init(
+					x: 0,
+					y: height - searchH,
+					width: width,
+					height: 1
+				))
+			sep.wantsLayer = true
+			sep.layer?.backgroundColor = NSColor.separatorColor.withAlphaComponent(0.07).cgColor
+			sep.autoresizingMask = [.width]
+			rootBlur.addSubview(sep)
 		}
-
-		searchField = searchfield(
-			frame: .init(
-				x: leadingX,
-				y: ySearch,
-				width: width - leadingX - config.textPadding,
-				height: searchFieldH
-			))
-		searchField.itemFontSize = config.searchFontSize
-		searchField.placeholderString = config.placeholder
-		searchField.focusRingType = .none
-		searchField.delegate = self
-		(searchField.cell as? NSSearchFieldCell)?.font = .systemFont(ofSize: config.searchFontSize)
-
-		searchField.isBordered = false
-		searchField.drawsBackground = false
-		searchField.wantsLayer = true
-		if let cell = searchField.cell as? NSSearchFieldCell {
-			cell.searchButtonCell = nil
-			cell.cancelButtonCell = nil
-		}
-		rootBlur.addSubview(searchField)
-
-		let sep = NSView(
-			frame: .init(
-				x: 0,
-				y: height - searchH,
-				width: width,
-				height: 1
-			))
-		sep.wantsLayer = true
-		sep.layer?.backgroundColor = NSColor.separatorColor.withAlphaComponent(0.07).cgColor
-		sep.autoresizingMask = [.width]
-		rootBlur.addSubview(sep)
 
 		let scroll = NSScrollView(
 			frame: .init(
