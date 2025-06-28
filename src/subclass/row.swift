@@ -49,9 +49,6 @@ final class row: NSTableRowView {
 		isHovered = false
 	}
 
-	private static let selectionPath = NSBezierPath()
-	private static let hoverPath = NSBezierPath()
-
 	override func drawSelection(in _: NSRect) {
 		guard selectionHighlightStyle != .none else { return }
 		drawRowBackground(isSelected: true)
@@ -67,20 +64,42 @@ final class row: NSTableRowView {
 		let rect = bounds.insetBy(dx: 2, dy: 2)
 		let path = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
 
+		let isDarkMode =
+			effectiveAppearance.name == .darkAqua || effectiveAppearance.name == .vibrantDark
+				|| effectiveAppearance.name == .accessibilityHighContrastDarkAqua
+
 		if isSelected {
-			NSColor.controlAccentColor.withAlphaComponent(0.23).setFill()
-			path.fill()
+			if isDarkMode {
+				NSColor.controlAccentColor.withAlphaComponent(0.23).setFill()
+				path.fill()
 
-			NSColor.controlAccentColor.withAlphaComponent(0.33).setStroke()
-			path.lineWidth = 1.0
-			path.stroke()
+				NSColor.controlAccentColor.withAlphaComponent(0.33).setStroke()
+				path.lineWidth = 1.0
+				path.stroke()
+			} else {
+				NSColor.controlAccentColor.withAlphaComponent(0.3).setFill()
+				path.fill()
+
+				NSColor.controlAccentColor.withAlphaComponent(0.5).setStroke()
+				path.lineWidth = 1.0
+				path.stroke()
+			}
 		} else {
-			NSColor.controlAccentColor.withAlphaComponent(0.1).setFill()
-			path.fill()
+			if isDarkMode {
+				NSColor.controlAccentColor.withAlphaComponent(0.1).setFill()
+				path.fill()
 
-			NSColor.controlAccentColor.withAlphaComponent(0.25).setStroke()
-			path.lineWidth = 0.5
-			path.stroke()
+				NSColor.controlAccentColor.withAlphaComponent(0.25).setStroke()
+				path.lineWidth = 0.5
+				path.stroke()
+			} else {
+				NSColor.controlAccentColor.withAlphaComponent(0.15).setFill()
+				path.fill()
+
+				NSColor.controlAccentColor.withAlphaComponent(0.38).setStroke()
+				path.lineWidth = 0.75
+				path.stroke()
+			}
 		}
 	}
 }

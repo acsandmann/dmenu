@@ -1,50 +1,6 @@
 import Cocoa
 
 extension dmenu {
-	func createHighlightedText(item: String, tokens: [String]) -> NSAttributedString {
-		let attr = NSMutableAttributedString(string: item)
-		let baseFont = NSFont.monospacedSystemFont(ofSize: config.itemFontSize, weight: .regular)
-
-		attr.addAttributes(
-			[
-				.font: baseFont,
-				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
-				.kern: 0.5,
-			], range: NSRange(location: 0, length: item.count)
-		)
-
-		let lowerItem = item.lowercased()
-		for token in tokens {
-			var searchStart = lowerItem.startIndex
-			while let range = lowerItem.range(of: token, range: searchStart ..< lowerItem.endIndex) {
-				let nsRange = NSRange(range, in: item)
-
-				let highlightColor = NSColor.systemCyan
-				attr.addAttributes(
-					[
-						.backgroundColor: highlightColor.withAlphaComponent(0.2),
-						.font: NSFont.monospacedSystemFont(
-							ofSize: config.itemFontSize, weight: .bold
-						),
-						.foregroundColor: highlightColor,
-						.kern: 0.8,
-						.shadow: {
-							let shadow = NSShadow()
-							shadow.shadowColor = highlightColor.withAlphaComponent(0.7)
-							shadow.shadowOffset = NSSize(width: 0, height: 0)
-							shadow.shadowBlurRadius = 3.0
-							return shadow
-						}(),
-					], range: nsRange
-				)
-
-				searchStart = range.upperBound
-			}
-		}
-
-		return attr
-	}
-
 	func numberOfRows(in _: NSTableView) -> Int { filteredItems.count }
 
 	func tableView(
@@ -56,6 +12,7 @@ extension dmenu {
 		let pad: CGFloat = config.sidePadding / 2
 
 		let txt = textfield()
+		txt.itemFontSize = config.itemFontSize
 		txt.isBordered = false
 		txt.drawsBackground = false
 		txt.isEditable = false
@@ -66,9 +23,9 @@ extension dmenu {
 		let tokens = searchField.stringValue
 			.lowercased()
 			.split(whereSeparator: \.isWhitespace)
+			.compactMap { $0.isEmpty ? nil : String($0) }
 		if !tokens.isEmpty {
-			let attr = createHighlightedText(item: item, tokens: tokens.map(String.init))
-			txt.attributedStringValue = attr
+			txt.attributedStringValue = txt.highlight(item: item, tokens: tokens)
 		} else {
 			txt.stringValue = item
 		}
@@ -118,7 +75,6 @@ extension dmenu {
 	func selectCurrentRow() {
 		let r = tableView.selectedRow
 		guard r >= 0, r < filteredItems.count else { return }
-		print(filteredItems[r])
 		fflush(stdout)
 		NSApp.terminate(nil)
 	}

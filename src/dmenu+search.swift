@@ -105,7 +105,11 @@ extension dmenu {
 				self.liveIndices = newLive
 				self.filteredItems = newItems
 				self.lastTokens = tokens
+
+				self.tableView.beginUpdates()
 				self.tableView.reloadData()
+				self.tableView.endUpdates()
+
 				if !newItems.isEmpty { self.selectRow(index: 0) }
 			}
 		}
