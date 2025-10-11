@@ -8,6 +8,7 @@ private class WeakRef<T: AnyObject> {
 final class row: NSTableRowView {
 	private var trackingArea: NSTrackingArea?
 	private static var currentHover: WeakRef<row>?
+	var colors: color_scheme!
 
 	private var isHovered = false {
 		didSet {
@@ -66,37 +67,37 @@ final class row: NSTableRowView {
 
 		let isDarkMode =
 			effectiveAppearance.name == .darkAqua || effectiveAppearance.name == .vibrantDark
-				|| effectiveAppearance.name == .accessibilityHighContrastDarkAqua
+			|| effectiveAppearance.name == .accessibilityHighContrastDarkAqua
 
 		if isSelected {
 			if isDarkMode {
-				NSColor.controlAccentColor.withAlphaComponent(0.23).setFill()
+				colors.highlight.withAlphaComponent(0.23).setFill()
 				path.fill()
 
-				NSColor.controlAccentColor.withAlphaComponent(0.33).setStroke()
+				colors.highlight.withAlphaComponent(0.33).setStroke()
 				path.lineWidth = 1.0
 				path.stroke()
 			} else {
-				NSColor.controlAccentColor.withAlphaComponent(0.3).setFill()
+				colors.highlight.withAlphaComponent(0.3).setFill()
 				path.fill()
 
-				NSColor.controlAccentColor.withAlphaComponent(0.5).setStroke()
+				colors.highlight.withAlphaComponent(0.5).setStroke()
 				path.lineWidth = 1.0
 				path.stroke()
 			}
 		} else {
 			if isDarkMode {
-				NSColor.controlAccentColor.withAlphaComponent(0.1).setFill()
+				colors.highlight.withAlphaComponent(0.1).setFill()
 				path.fill()
 
-				NSColor.controlAccentColor.withAlphaComponent(0.25).setStroke()
+				colors.highlight.withAlphaComponent(0.25).setStroke()
 				path.lineWidth = 0.5
 				path.stroke()
 			} else {
-				NSColor.controlAccentColor.withAlphaComponent(0.15).setFill()
+				colors.highlight.withAlphaComponent(0.15).setFill()
 				path.fill()
 
-				NSColor.controlAccentColor.withAlphaComponent(0.38).setStroke()
+				colors.highlight.withAlphaComponent(0.38).setStroke()
 				path.lineWidth = 0.75
 				path.stroke()
 			}

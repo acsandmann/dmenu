@@ -1,5 +1,48 @@
-import CoreGraphics
+import Cocoa
 import Foundation
+
+extension NSColor {
+	convenience init?(hex: String) {
+		var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+		hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+		var rgb: UInt64 = 0
+
+		var r: CGFloat = 0.0
+		var g: CGFloat = 0.0
+		var b: CGFloat = 0.0
+		var a: CGFloat = 1.0
+
+		let length = hexSanitized.count
+
+		guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+
+		if length == 6 {
+			r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+			g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+			b = CGFloat(rgb & 0x0000FF) / 255.0
+		} else if length == 8 {
+			r = CGFloat((rgb & 0xFF00_0000) >> 24) / 255.0
+			g = CGFloat((rgb & 0x00FF_0000) >> 16) / 255.0
+			b = CGFloat((rgb & 0x0000_FF00) >> 8) / 255.0
+			a = CGFloat(rgb & 0x0000_00FF) / 255.0
+		} else {
+			return nil
+		}
+
+		self.init(red: r, green: g, blue: b, alpha: a)
+	}
+}
+
+extension NSFont {
+	static func preferred(named name: String?, size: CGFloat, weight: NSFont.Weight) -> NSFont {
+		if let name = name, let font = NSFont(name: name, size: size) {
+			return font
+		} else {
+			return NSFont.monospacedSystemFont(ofSize: size, weight: weight)
+		}
+	}
+}
 
 enum menu_size: String {
 	case extraSmall = "xs"
@@ -46,6 +89,18 @@ private let presets: [menu_size: size_preset] = [
 	),
 ]
 
+struct color_scheme {
+	let background: NSColor
+	let text: NSColor
+	let highlight: NSColor
+}
+
+private let default_colors = color_scheme(
+	background: .black.withAlphaComponent(0.3),
+	text: NSColor.labelColor.withAlphaComponent(0.8),
+	highlight: NSColor.controlAccentColor
+)
+
 struct dmenu_config {
 	let placeholder: String
 	let showIcon: Bool
@@ -57,6 +112,10 @@ struct dmenu_config {
 		iconSize, iconPadding,
 		textPadding, sidePadding: CGFloat
 
+	let colors: color_scheme
+
+	let fontName: String?
+
 	var totalHeight: CGFloat { searchH + itemH * maxRows }
 
 	static func make(from argv: [String] = CommandLine.arguments) -> dmenu_config? {
@@ -64,6 +123,10 @@ struct dmenu_config {
 		var showIcon = false
 		var lock = false
 		var placeholderArg: String?
+		var bgColorArg: String?
+		var textColorArg: String?
+		var highlightColorArg: String?
+		var fontName: String?
 		var i = 1
 
 		while i < argv.count {
@@ -82,11 +145,36 @@ struct dmenu_config {
 				size = menu_size(rawValue: raw) ?? .medium
 			case "-i", "--icon": showIcon = true
 			case "--lock": lock = true
+			case "--font":
+				if i + 1 < argv.count, !argv[i + 1].starts(with: "-") {
+					fontName = argv[i + 1]
+					i += 1
+				} else {
+					fontName = nil
+				}
 			case "-p", "--placeholder":
 				guard i + 1 < argv.count else {
 					fatalError("'-p/--placeholder' requires a value.")
 				}
 				placeholderArg = argv[i + 1]
+				i += 1
+			case "--bg-color":
+				guard i + 1 < argv.count else {
+					fatalError("'--bg-color' requires a hex value.")
+				}
+				bgColorArg = argv[i + 1]
+				i += 1
+			case "--text-color":
+				guard i + 1 < argv.count else {
+					fatalError("'--text-color' requires a hex value.")
+				}
+				textColorArg = argv[i + 1]
+				i += 1
+			case "--highlight-color":
+				guard i + 1 < argv.count else {
+					fatalError("'--highlight-color' requires a hex value.")
+				}
+				highlightColorArg = argv[i + 1]
 				i += 1
 			default:
 				fatalError("Unknown argument '\(arg)'. Run with -h for help.")
@@ -98,6 +186,41 @@ struct dmenu_config {
 			placeholderArg ?? UserDefaults.standard.string(forKey: "placeholder") ?? "Search"
 
 		let p = presets[size]!
+		let colors = color_scheme(
+			background: {
+				if let hex = bgColorArg {
+					guard let color = NSColor(hex: hex) else {
+						fatalError(
+							"Invalid hex color format for --bg-color: '\(hex)'. Use '#RRGGBB' or '#RRGGBBAA'."
+						)
+					}
+					return color
+				}
+				return default_colors.background
+			}(),
+			text: {
+				if let hex = textColorArg {
+					guard let color = NSColor(hex: hex) else {
+						fatalError(
+							"Invalid hex color format for --text-color: '\(hex)'. Use '#RRGGBB' or '#RRGGBBAA'."
+						)
+					}
+					return color
+				}
+				return default_colors.text
+			}(),
+			highlight: {
+				if let hex = highlightColorArg {
+					guard let color = NSColor(hex: hex) else {
+						fatalError(
+							"Invalid hex color format for --highlight-color: '\(hex)'. Use '#RRGGBB' or '#RRGGBBAA'."
+						)
+					}
+					return color
+				}
+				return default_colors.highlight
+			}()
+		)
 
 		return dmenu_config(
 			placeholder: placeholder, showIcon: showIcon, lock: lock,
@@ -105,7 +228,8 @@ struct dmenu_config {
 			searchFieldHeight: p.searchFieldHeight, borderRadius: p.borderRadius,
 			searchFontSize: p.searchFontSize, itemFontSize: p.itemFontSize,
 			iconSize: p.iconSize, iconPadding: p.iconPadding,
-			textPadding: p.textPadding, sidePadding: p.sidePadding
+			textPadding: p.textPadding, sidePadding: p.sidePadding,
+			colors: colors, fontName: fontName
 		)
 	}
 
@@ -126,6 +250,10 @@ struct dmenu_config {
 			  -i , --icon              Show icon column
 			  -p , --placeholder TEXT  Custom search-field placeholder
 			       --lock              Display-only mode (disable search and selection)
+				   --font              Set the font name (default is system monospace font)
+			       --bg-color HEX      Set background tint ('#RRGGBBAA' or '#RRGGBB')
+			       --text-color HEX    Set item text color
+			       --highlight-color HEX Set item highlight color
 			  -h , --help              Show this help and exit
 			""")
 	}

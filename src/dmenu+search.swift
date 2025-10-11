@@ -75,8 +75,8 @@ extension dmenu {
 
 		let searchSpace =
 			(tokens.starts(with: lastTokens) && !liveIndices.isEmpty)
-			? liveIndices
-			: allIndices
+				? liveIndices
+				: allIndices
 
 		Self.workQ.async {
 			let tokenBytes = tokens.map { Array($0.utf8) }
@@ -139,12 +139,12 @@ extension dmenu {
 			else { return nil }
 
 			// contiguous bonus + gap penalty
-			score &+= 32  // token matched
+			score &+= 32 // token matched
 			score &+= (r.upper - r.lower) == tb.count ? 16 : 0
-			score &-= (r.lower - cursor) * 2  // gap penalty
+			score &-= (r.lower - cursor) * 2 // gap penalty
 			cursor = r.upper
 		}
-		score &-= (hayBytes.count - cursor)  // prefer shorter tail after last match
+		score &-= (hayBytes.count - cursor) // prefer shorter tail after last match
 		return score
 	}
 

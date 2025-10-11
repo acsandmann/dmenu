@@ -2,6 +2,8 @@ import Cocoa
 
 final class textfield: NSTextField {
 	var itemFontSize: CGFloat!
+	var customTextColor: NSColor!
+	var highlightColor: NSColor!
 
 	override var allowsVibrancy: Bool { false }
 
@@ -22,7 +24,7 @@ final class textfield: NSTextField {
 		attr.addAttributes(
 			[
 				.font: baseFont,
-				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.foregroundColor: customTextColor!,
 				.kern: 0.5,
 			], range: NSRange(location: 0, length: stringValue.count)
 		)
@@ -37,7 +39,7 @@ final class textfield: NSTextField {
 		attr.addAttributes(
 			[
 				.font: baseFont,
-				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.foregroundColor: customTextColor!,
 				.kern: 0.5,
 			], range: NSRange(location: 0, length: item.count)
 		)
@@ -48,14 +50,13 @@ final class textfield: NSTextField {
 			while let range = lowerItem.range(of: token, range: searchStart ..< lowerItem.endIndex) {
 				let nsRange = NSRange(range, in: item)
 
-				let highlightColor = NSColor.systemCyan
 				attr.addAttributes(
 					[
 						.backgroundColor: highlightColor.withAlphaComponent(0.2),
 						.font: NSFont.monospacedSystemFont(
 							ofSize: itemFontSize, weight: .bold
 						),
-						.foregroundColor: highlightColor,
+						.foregroundColor: highlightColor!,
 						.kern: 0.8,
 						.shadow: {
 							let shadow = NSShadow()

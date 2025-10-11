@@ -92,7 +92,7 @@ extension dmenu {
 		let shadowLayer = CALayer()
 		shadowLayer.frame = rootBlur.bounds
 		shadowLayer.cornerRadius = borderRadius
-		shadowLayer.backgroundColor = NSColor.black.withAlphaComponent(0.3).cgColor
+		shadowLayer.backgroundColor = config.colors.background.cgColor
 		shadowLayer.shadowColor = NSColor.black.cgColor
 		shadowLayer.shadowOpacity = 0.5
 		shadowLayer.shadowRadius = 30
@@ -126,6 +126,7 @@ extension dmenu {
 					height: searchFieldH
 				))
 			searchField.itemFontSize = config.searchFontSize
+			searchField.customTextColor = config.colors.text
 			searchField.placeholderString = config.placeholder
 			searchField.focusRingType = .none
 			searchField.delegate = self

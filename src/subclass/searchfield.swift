@@ -2,6 +2,7 @@ import Cocoa
 
 final class searchfield: NSSearchField {
 	var itemFontSize: CGFloat!
+	var customTextColor: NSColor!
 
 	override func awakeFromNib() {
 		super.awakeFromNib()
@@ -41,7 +42,7 @@ final class searchfield: NSSearchField {
 
 	private func applyFieldEditorStyling() {
 		guard let fieldEditor = currentEditor() as? NSTextView,
-		      let textStorage = fieldEditor.textStorage
+			let textStorage = fieldEditor.textStorage
 		else { return }
 
 		let fullRange = NSRange(location: 0, length: textStorage.length)
@@ -50,7 +51,7 @@ final class searchfield: NSSearchField {
 				NSAttributedString.Key.font: NSFont.monospacedSystemFont(
 					ofSize: itemFontSize, weight: .regular
 				),
-				NSAttributedString.Key.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				NSAttributedString.Key.foregroundColor: customTextColor!,
 				NSAttributedString.Key.kern: 0.5,
 			], range: fullRange
 		)
@@ -62,7 +63,7 @@ final class searchfield: NSSearchField {
 		attr.addAttributes(
 			[
 				.font: NSFont.monospacedSystemFont(ofSize: itemFontSize, weight: .regular),
-				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.foregroundColor: customTextColor!,
 				.kern: 0.5,
 			], range: NSRange(location: 0, length: text.count)
 		)
@@ -75,7 +76,7 @@ final class searchfield: NSSearchField {
 		attr.addAttributes(
 			[
 				.font: NSFont.monospacedSystemFont(ofSize: itemFontSize, weight: .regular),
-				.foregroundColor: NSColor.labelColor.withAlphaComponent(0.8),
+				.foregroundColor: customTextColor!,
 				.kern: 0.5,
 			], range: NSRange(location: 0, length: placeholder.count)
 		)

@@ -20,6 +20,9 @@ ls | ./dmenu -p "Select a file" -i -l
 -m # medium window(default)
 -l # large window
 --lock # doesnt allow selections, essentially acts as a display menu
+--bg-color HEX # set the background tint ('#RRGGBBAA' or '#RRGGBB')
+--text-color HEX # sets item text color
+--highlight-color HEX # sets item highlight color
 ```
 
 ### how fuzzy matching works

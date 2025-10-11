@@ -13,18 +13,19 @@ extension dmenu {
 
 		let txt = textfield()
 		txt.itemFontSize = config.itemFontSize
+		txt.customTextColor = config.colors.text
+		txt.highlightColor = config.colors.highlight
 		txt.isBordered = false
 		txt.drawsBackground = false
 		txt.isEditable = false
 		txt.lineBreakMode = .byTruncatingTail
 		txt.font = .systemFont(ofSize: config.itemFontSize)
-		txt.textColor = .labelColor
 
 		let tokens =
 			searchField?.stringValue
-			.lowercased()
-			.split(whereSeparator: \.isWhitespace)
-			.compactMap { $0.isEmpty ? nil : String($0) } ?? []
+				.lowercased()
+				.split(whereSeparator: \.isWhitespace)
+				.compactMap { $0.isEmpty ? nil : String($0) } ?? []
 		if !tokens.isEmpty {
 			txt.attributedStringValue = txt.highlight(item: item, tokens: tokens)
 		} else {
@@ -50,7 +51,9 @@ extension dmenu {
 	}
 
 	func tableView(_: NSTableView, rowViewForRow _: Int) -> NSTableRowView? {
-		row()
+		let r = row()
+		r.colors = config.colors
+		return r
 	}
 
 	func moveSelection(offset: Int) {
